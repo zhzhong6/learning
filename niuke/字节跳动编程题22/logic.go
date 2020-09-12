@@ -2,49 +2,36 @@ package main
 
 import (
 	"fmt"
-	"sort"
+	"math"
 )
 
-/*
-5 10 9
-0 5
-9 1
-8 1
-0 1
-9 100
-
-*/
-
 func main() {
-	var n, r, avg int
-	fmt.Scan(&n, &r, &avg)
-	total := n * avg
-	rl := make([]int, 0)
-	rm := make(map[int]int)
-	al := 0
-	for n > 0 {
-		n--
-		var i, j int
-		fmt.Scan(&i, &j)
-		if _,ok:=rm[j];!ok{
-			rl = append(rl, j)
+	var n, x   int
+	fmt.Scan(&n, &x)
+	an:=make([]int,n)
+	min :=math.MaxInt32
+
+	for i:=0;i<n;i++ {
+		fmt.Scan(&an[i])
+		if min>an[i]{
+			min=an[i]
 		}
-		rm[j] += r - i
-		al += i
 	}
-	sort.Ints(rl)
-	rt := 0
-	for _, j := range rl {
-		if total <= al {
+	count :=min*n
+	for i:=0;i<n;i++ {
+		 an[i]-=min
+	}
+	for {
+		x= (x+n-1)%n
+		if 	an[x]-1<0{
+			an[x]=count
 			break
 		}
-		i := rm[j]
-		if total-al <= i {
-			rt += (total - al) * j
-			break
-		}
-		rt += i * j
-		al += i
+		count++
+		an[x]--
 	}
-	fmt.Println(rt)
+	for _,v:=range an {
+		fmt.Print(v," ")
+	}
+
 }

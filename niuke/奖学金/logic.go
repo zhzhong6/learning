@@ -1,25 +1,50 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
-func main()  {
-	n:=2
-	for n>0{
+/*
+5 10 9
+0 5
+9 1
+8 1
+0 1
+9 100
+
+*/
+
+func main() {
+	var n, r, avg int
+	fmt.Scan(&n, &r, &avg)
+	total := n * avg
+	rl := make([]int, 0)
+	rm := make(map[int]int)
+	al := 0
+	for n > 0 {
 		n--
-		var s1   string
-		fmt.Scan(&s1)
-		l1:=len(s1)
-		for i:=0;i<l1 ;i+=8{
-			if i+8>l1 {
-				fmt.Print(s1[i:l1])
-				for j:=l1;j<i+8;j++{
-					fmt.Print(0)
-				}
-				fmt.Println()
-			}else {
-				fmt.Println(s1[i:i+8])
-			}
+		var i, j int
+		fmt.Scan(&i, &j)
+		if _,ok:=rm[j];!ok{
+			rl = append(rl, j)
 		}
+		rm[j] += r - i
+		al += i
 	}
-
+	sort.Ints(rl)
+	rt := 0
+	for _, j := range rl {
+		if total <= al {
+			break
+		}
+		i := rm[j]
+		if total-al <= i {
+			rt += (total - al) * j
+			break
+		}
+		rt += i * j
+		al += i
+	}
+	fmt.Println(rt)
 }

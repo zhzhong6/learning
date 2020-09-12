@@ -5,46 +5,33 @@ import (
 	"sort"
 )
 
-/*
-5 10 9
-0 5
-9 1
-8 1
-0 1
-9 100
-
-*/
-
 func main() {
-	var n, r, avg int
-	fmt.Scan(&n, &r, &avg)
-	total := n * avg
-	rl := make([]int, 0)
-	rm := make(map[int]int)
-	al := 0
-	for n > 0 {
-		n--
-		var i, j int
-		fmt.Scan(&i, &j)
-		if _,ok:=rm[j];!ok{
-			rl = append(rl, j)
-		}
-		rm[j] += r - i
-		al += i
-	}
-	sort.Ints(rl)
-	rt := 0
-	for _, j := range rl {
-		if total <= al {
+	var n, k, d int
+	for {
+		_, err := fmt.Scan(&n)
+		if err != nil {
 			break
 		}
-		i := rm[j]
-		if total-al <= i {
-			rt += (total - al) * j
-			break
+		nl := make([]int, 0, n)
+		for n > 0 {
+			n--
+			var i int
+			fmt.Scan(&i)
+			nl = append(nl, i)
 		}
-		rt += i * j
-		al += i
+		sort.Ints(nl)
+		fmt.Scan(&k, &d)
+		r := nl[len(nl)-1]
+		k1 := 1
+		for i := len(nl) - 2; i >= 0 && k1 != k; i-- {
+			if nl[i+1]-nl[i] > d {
+				r = nl[i]
+				k1 = 1
+				continue
+			}
+			r *= nl[i]
+			k1++
+		}
+		fmt.Println(r)
 	}
-	fmt.Println(rt)
 }
