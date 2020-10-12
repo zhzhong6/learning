@@ -5,22 +5,33 @@ import (
 )
 
 func main() {
-	res :=lengthOfLongestSubstring("abcabcbb")
+	res := canPartition([]int{100})
 	fmt.Println(res)
 }
-func lengthOfLongestSubstring(s string) int {
-	var res int
-	for i:=0;i<len(s);i++{
-		rmap:=make(map[byte]struct{})
-		for j:=i;j<len(s);j++{
-			 if _,ok:=rmap[s[j]] ;ok{
-			 	break
-			 }
-			rmap[s[j]]= struct{}{}
-		}
-		if len(rmap)>res {
-			res=len(rmap)
+func canPartition(nums []int) bool {
+	var sum int
+	for _, num := range nums {
+		sum += num
+	}
+	if sum%2 != 0 {
+		return false
+	}
+	sum = sum / 2
+	db := make([][]bool, len(nums))
+	for i := 0; i < len(db); i++ {
+		db[i] = make([]bool, sum+1)
+		db[i][0] = true
+	}
+	if nums[0]>sum {
+		return false
+	}
+	db[0][nums[0]]=true
+	for i := 1; i < len(db); i++ {
+		for j := 1; j < sum+1; j++ {
+			if  db[i-1][j] || (j>=nums[i] &&db[i-1][j-nums[i]] ) {
+				db[i][j] =true
+			}
 		}
 	}
-	return res
+	return 	db[len(db)-1][sum]
 }

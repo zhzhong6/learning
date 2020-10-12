@@ -5,22 +5,63 @@ import (
 )
 
 func main() {
-	res :=lengthOfLongestSubstring("abcabcbb")
+	res := getMinimumDifference(&TreeNode{
+		Val: 1,
+		Left:nil,
+		Right:&TreeNode{
+			Val: 5,
+			Left:&TreeNode{
+				Val: 3,
+				Left:nil,
+				Right:nil,
+			},
+			Right:nil,
+		},
+	})
 	fmt.Println(res)
 }
-func lengthOfLongestSubstring(s string) int {
-	var res int
-	for i:=0;i<len(s);i++{
-		rmap:=make(map[byte]struct{})
-		for j:=i;j<len(s);j++{
-			 if _,ok:=rmap[s[j]] ;ok{
-			 	break
-			 }
-			rmap[s[j]]= struct{}{}
-		}
-		if len(rmap)>res {
-			res=len(rmap)
-		}
+
+type TreeNode struct {
+	Val   int
+	Left  *TreeNode
+	Right *TreeNode
+}
+
+func getMinimumDifference(root *TreeNode) int {
+	dif=0
+	bianli(root)
+	return dif
+}
+
+func bianli(root *TreeNode) {
+	if root == nil {
+		return
 	}
-	return res
+	diff(root)
+	if root.Left != nil {
+		bianli(root.Left)
+	}
+	if root.Right != nil {
+		bianli(root.Right)
+	}
+}
+
+var dif int
+
+func diff(n *TreeNode) {
+	left := n.Left
+	right := n.Right
+	for left != nil {
+		if (left.Right == nil && dif > n.Val-left.Val) || dif == 0 {
+			dif = n.Val - left.Val
+		}
+		left = left.Right
+	}
+	for right != nil {
+		if (right.Left == nil && dif > right.Val-n.Val) || dif == 0 {
+			dif = right.Val-n.Val
+		}
+		right = right.Left
+	}
+
 }

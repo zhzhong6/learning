@@ -2,25 +2,24 @@ package main
 
 import (
 	"fmt"
+	"unsafe"
 )
 
-func main() {
-	res :=lengthOfLongestSubstring("abcabcbb")
-	fmt.Println(res)
+type  str1 struct {
+	a byte
+	c byte
 }
-func lengthOfLongestSubstring(s string) int {
-	var res int
-	for i:=0;i<len(s);i++{
-		rmap:=make(map[byte]struct{})
-		for j:=i;j<len(s);j++{
-			 if _,ok:=rmap[s[j]] ;ok{
-			 	break
-			 }
-			rmap[s[j]]= struct{}{}
-		}
-		if len(rmap)>res {
-			res=len(rmap)
-		}
-	}
-	return res
+type  str2 struct {
+	d float64
+	c byte
+	b int32
+	a int64
+
+}
+
+
+func main() {
+	s1:=unsafe.Sizeof(str1{})
+	s2:=unsafe.Sizeof(str2{})
+	fmt.Println(s1,s2)
 }
