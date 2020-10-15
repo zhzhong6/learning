@@ -1,112 +1,99 @@
 package bitmap
-
 import (
+	"bytes"
 	"fmt"
-	"strings"
 )
 
-const (
-	bitSize = 8
-)
-
-var bitmask = []byte{1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7}
-// 首字母小写 只能调用 工厂函数 创建
-type bitmap struct {
-	bits     []byte
-	bitCount uint64 // 已填入数字的数量
-	capacity uint64 // 容量
-}
-// 创建工厂函数
-func NewBitmap(maxnum uint64) *bitmap {
-	return &bitmap{bits: make([]byte, (maxnum+7)/bitSize), bitCount: 0, capacity: maxnum}
+// 用于存储数字的集和
+type IntSet struct {
+	words  []uint64
+	length int
 }
 
-// 填入数字
-func (this *bitmap) Set(num uint64) {
-	byteIndex, bitPos := this.offset(num)
-	// 1 左移 bitPos 位 进行 按位或 (置为 1)
-	this.bits[byteIndex] |= bitmask[bitPos]
-	this.bitCount++
+func (s *IntSet) Has(x int) bool {
+	word, bit := x/64, uint(x%64)
+	return word < len(s.words) && (s.words[word]&(1<<bit)) != 0
 }
 
-// 清除填入的数字
-func (this *bitmap) Reset(num uint64) {
-	byteIndex, bitPos := this.offset(num)
-	// 重置为空位 (重置为 0)
-	this.bits[byteIndex] &= ^bitmask[bitPos]
-	this.bitCount--
-}
-
-// 数字是否在位图中
-func (this *bitmap) Test(num uint64) bool {
-	byteIndex := num / bitSize
-	if byteIndex >= uint64(len(this.bits)) {
-		return false
+func (s *IntSet) Add(x int) {
+	word, bit := x/64, uint(x%64)
+	for word >= len(s.words) {
+		s.words = append(s.words, 0)
 	}
-	bitPos := num % bitSize
-	// 右移 bitPos 位 和 1 进行 按位与
-	return !(this.bits[byteIndex]&bitmask[bitPos] == 0)
-}
-
-func (this *bitmap) offset(num uint64) (byteIndex uint64, bitPos byte) {
-	byteIndex = num / bitSize // 字节索引
-	if byteIndex >= uint64(len(this.bits)) {
-		panic(fmt.Sprintf(" runtime error: index value %d out of range", byteIndex))
-		return
+	// 判断 x 是否已经存在 s 中
+	if s.words[word]&(1<<bit) == 0 {
+		s.words[word] |= 1 << bit
+		s.length++
 	}
-	bitPos = byte(num % bitSize) // bit位置
-	return byteIndex, bitPos
 }
 
-// 位图的容量
-func (this *bitmap) Size() uint64 {
-	return uint64(len(this.bits) * bitSize)
-}
-
-// 是否空位图
-func (this *bitmap) IsEmpty() bool {
-	return this.bitCount == 0
-}
-
-// 是否已填满
-func (this *bitmap) IsFully() bool {
-	return this.bitCount == this.capacity
-}
-
-// 已填入的数字个数
-func (this *bitmap) Count() uint64 {
-	return this.bitCount
-}
-
-// 获取填入的数字切片
-func (this *bitmap) GetData() []uint64 {
-	var data []uint64
-	count := this.Size()
-	for index := uint64(0); index < count; index++ {
-		if this.Test(index) {
-			data = append(data, index)
-		}
-	}
-	return data
-}
-
-func (this *bitmap) String() string {
-	var sb strings.Builder
-	for index := len(this.bits) - 1; index >= 0; index-- {
-		sb.WriteString(byteToBinaryString(this.bits[index]))
-		sb.WriteString(" ")
-	}
-	return sb.String()
-}
-
-func byteToBinaryString(data byte) string {
-	var sb strings.Builder
-	for index := 0; index < bitSize; index++ {
-		if (bitmask[7-index] & data) == 0 {
-			sb.WriteString("0")
+func (s *IntSet) UnionWith(t *IntSet) {
+	originLenOfSet := len(s.words)
+	for i, v := range t.words {
+		if i < originLenOfSet {
+			if v != 0 {
+				for j := uint(0); j < 64; j++ {
+					if s.words[i]&(1<<j) == 0 && (v&(1<<j) != 0) {
+						s.length++
+					}
+				}
+				s.words[i] |= v
+			}
 		} else {
-			sb.WriteString("1")
+			s.words = append(s.words, v)
+			for j := uint(0); j < 64; j++ {
+				if v&(1<<j) != 0 {
+					s.length++
+				}
+			}
 		}
 	}
-	return sb.String()
+}
+
+func (s *IntSet) String() string {
+	var buf bytes.Buffer
+	buf.WriteByte('{')
+	for i, v := range s.words {
+		if v == 0 {
+			continue
+		}
+		for j := uint(0); j < 64; j++ {
+			if v&(1<<j) != 0 {
+				if buf.Len() > len("{") {
+					buf.WriteByte(' ')
+				}
+				fmt.Fprintf(&buf, "%d", 64*uint(i)+j)
+			}
+		}
+	}
+	buf.WriteByte('}')
+	fmt.Fprintf(&buf, "\nLength: %d", s.length)
+	return buf.String()
+}
+
+func (s *IntSet) Remove(x int) {
+	word, bit := x/64, uint(x%64)
+	if word < len(s.words) {
+		if s.words[word] & (1 << bit) != 0 {
+			s.words[word] &= ^(1 << bit)
+			s.length--
+		}
+	}
+}
+
+func (s *IntSet) Len() int {
+	return s.length
+}
+
+func (s *IntSet) Clear() {
+	s.words = nil
+	s.length = 0
+}
+
+func (s *IntSet) Copy() (cp *IntSet) {
+	cp = new(IntSet)
+	cp.words = make([]uint64, len(s.words))
+	cp.length = s.length
+	copy(cp.words, s.words)
+	return cp
 }
