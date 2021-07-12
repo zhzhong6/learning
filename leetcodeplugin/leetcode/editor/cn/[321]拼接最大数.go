@@ -37,6 +37,43 @@
 
 //leetcode submit region begin(Prohibit modification and deletion)
 func maxNumber(nums1 []int, nums2 []int, k int) []int {
+res := make([]int, 0, k)
+for k != 0 {
+if len(nums1) == 0 {
+res = append(res, nums2[len(nums2)-k:]...)
+break
+}
+if len(nums2) == 0 {
+res = append(res, nums1[len(nums1)-k:]...)
+break
+}
+t1 := max(nums1, k, len(nums2))
+t2 := max(nums2, k, len(nums1))
+if  nums1[t1] >  nums2[t1] {
+res = append(res, nums1[t1])
+nums1 = nums1[t1+1:]
+} else {
+res = append(res, nums2[t2])
+nums2 = nums2[t2+1:]
+}
+k--
+}
+
+return res
+}
+
+func max(an []int, k, n int) int {
+tar := 0
+for i := 0; i < len(an); i++ {
+if len(an)-i+n < k {
+return tar
+}
+if an[tar] < an[i] {
+tar = i
+}
+}
+return tar
 
 }
+
 //leetcode submit region end(Prohibit modification and deletion)

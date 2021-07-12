@@ -9,22 +9,23 @@ import (
 //	sortArrayByParityII([]int{1,2,3,4})
 //}
 func Test42(t *testing.T) {
-	res := reconstructQueue([][]int{
-		{7, 0}, {4, 4}, {7, 1}, {5, 0}, {6, 1}, {5, 2}})
+	res := p( []int{1, 2, 3})
 	fmt.Println(res)
 }
 
-func maxNumber(nums1 []int, nums2 []int, k int) []int {
-	res1 := make([]int, 0, k)
-	for i := 0; i < len(nums1); i++ {
-		for j := 0; j < len(res1); j++ {
-			if nums1[i] > res1[j] && j+len(res1)-i < k {
-				res1 = append(res1[:j], nums1[i])
-				break
-			}
-			if len(res1) < k {
-				res1 = append(res1, nums1[i])
-			}
+
+func permute (nums []int) [][]int {
+	bn :=make([][]int,0)
+	if len(nums)==1 {
+		return [][]int{nums}
+	}
+	for i, n :=range nums {
+		pn := append ([]int{},nums[:i]...)
+		pn =append (pn,nums[i+1:]...)
+		for _,p1 :=range  permute(pn) {
+			pp :=append([]int{n},p1...)
+			bn =append(bn,pp)
 		}
 	}
+	return bn
 }
